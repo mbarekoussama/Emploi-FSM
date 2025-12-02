@@ -146,4 +146,7 @@ Ce projet est développé dans le cadre d'un projet académique pour la Faculté
 
 ## 📧 Contact
 
+
+Comment view- **Téléphone** : +216 56630181
+- **Email** : edulearn@gmail.com
 Pour toute question ou suggestion, n'hésitez pas à ouvrir une issue sur ce repository.
