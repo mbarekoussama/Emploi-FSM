@@ -1,22 +1,29 @@
-# Stage 1: Build the application
-FROM maven:3.8.7-eclipse-temurin-17 AS build
+# Multi-stage build for Spring Boot application
+
+# Stage 1: Build the application using Maven wrapper
+FROM eclipse-temurin:17-jdk-jammy AS build
 
 WORKDIR /app
 
-# Copy the pom.xml and download dependencies
-COPY pom.xml .
+# Copy Maven wrapper and make it executable
 COPY .mvn .mvn
 COPY mvnw .
 COPY mvnw.cmd .
+RUN chmod +x mvnw
 
-# Download dependencies
-RUN mvn dependency:go-offline -B
+# Copy the pom.xml
+COPY pom.xml .
 
 # Copy the source code
 COPY src ./src
 
 # Build the application
-RUN mvn clean package -DskipTests
+# Note: If you encounter SSL certificate issues in your environment,
+# you may need to build locally and use a simpler Dockerfile
+RUN ./mvnw clean package -DskipTests || \
+    (apt-get update && apt-get install -y ca-certificates && \
+    update-ca-certificates && \
+    ./mvnw clean package -DskipTests)
 
 # Stage 2: Run the application
 FROM eclipse-temurin:17-jre-alpine
