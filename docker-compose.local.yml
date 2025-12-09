@@ -1,0 +1,47 @@
+# Docker Compose file for local development
+# This version uses pre-built JAR for backend to avoid SSL certificate issues
+#
+# Prerequisites:
+#   1. Build the backend JAR first:
+#      cd backEnd && ./mvnw clean package -DskipTests
+#   2. Then run: docker-compose -f docker-compose.local.yml up -d
+
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./backEnd
+      dockerfile: Dockerfile.simple
+    container_name: emploi-fsm-backend
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    networks:
+      - emploi-fsm-network
+    healthcheck:
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+  frontend:
+    build:
+      context: ./frontEnd
+      dockerfile: Dockerfile
+      args:
+        - BACKEND_URL=http://backend:8082
+    container_name: emploi-fsm-frontend
+    ports:
+      - "80:80"
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - emploi-fsm-network
+
+networks:
+  emploi-fsm-network:
+    driver: bridge

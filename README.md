@@ -68,10 +68,22 @@ git clone https://github.com/mbarekoussama/Emploi-FSM.git
 cd Emploi-FSM
 
 # Construire et démarrer tous les services
-docker-compose up -d
+docker compose up -d
 
 # Voir les logs
-docker-compose logs -f
+docker compose logs -f
+```
+
+**Alternative locale** : Si vous rencontrez des problèmes de certificats SSL, utilisez la version locale :
+
+```bash
+# 1. Construire le backend localement
+cd backEnd
+./mvnw clean package -DskipTests
+cd ..
+
+# 2. Utiliser docker-compose local
+docker compose -f docker-compose.local.yml up -d
 ```
 
 L'application sera accessible sur :
@@ -82,13 +94,15 @@ L'application sera accessible sur :
 
 Pour arrêter l'application :
 ```bash
-docker-compose down
+docker compose down
 ```
 
 Pour reconstruire les images après modification du code :
 ```bash
-docker-compose up -d --build
+docker compose up -d --build
 ```
+
+📚 **Plus d'informations** : Consultez [DOCKER.md](DOCKER.md) pour la documentation complète et le dépannage.
 
 ### Option 2 : Installation classique
 
@@ -171,36 +185,36 @@ Une fois le backend démarré, accédez à la documentation Swagger :
 ### Gestion des conteneurs
 ```bash
 # Démarrer les services
-docker-compose up -d
+docker compose up -d
 
 # Arrêter les services
-docker-compose down
+docker compose down
 
 # Redémarrer un service spécifique
-docker-compose restart backend
-docker-compose restart frontend
+docker compose restart backend
+docker compose restart frontend
 
 # Voir les logs
-docker-compose logs -f
-docker-compose logs -f backend
-docker-compose logs -f frontend
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
 
 # Reconstruire les images
-docker-compose build
-docker-compose up -d --build
+docker compose build
+docker compose up -d --build
 
 # Supprimer les volumes (réinitialiser la base de données)
-docker-compose down -v
+docker compose down -v
 ```
 
 ### Commandes de débogage
 ```bash
 # Lister les conteneurs en cours d'exécution
-docker-compose ps
+docker compose ps
 
 # Accéder au shell d'un conteneur
-docker-compose exec backend sh
-docker-compose exec frontend sh
+docker compose exec backend sh
+docker compose exec frontend sh
 
 # Voir l'utilisation des ressources
 docker stats
