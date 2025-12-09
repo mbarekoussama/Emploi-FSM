@@ -31,8 +31,6 @@ services:
     build:
       context: ./frontEnd
       dockerfile: Dockerfile
-      args:
-        - BACKEND_URL=http://backend:8082
     container_name: emploi-fsm-frontend
     ports:
       - "80:80"

@@ -19,6 +19,7 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy the build output to replace the default nginx contents
+# Note: The path 'dist/pi' comes from the outputPath in angular.json
 COPY --from=build /app/dist/pi /usr/share/nginx/html
 
 # Copy nginx configuration

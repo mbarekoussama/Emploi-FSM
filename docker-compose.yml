@@ -13,7 +13,7 @@ services:
     networks:
       - emploi-fsm-network
     healthcheck:
-      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8082/actuator/health || exit 1"]
+      test: ["CMD-SHELL", "wget --quiet --tries=1 --spider http://localhost:8082/actuator/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -23,8 +23,6 @@ services:
     build:
       context: ./frontEnd
       dockerfile: Dockerfile
-      args:
-        - BACKEND_URL=http://backend:8082
     container_name: emploi-fsm-frontend
     ports:
       - "80:80"
