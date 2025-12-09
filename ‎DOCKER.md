@@ -1,155 +1,169 @@
-# Docker Configuration for Emploi-FSM
 
-This directory contains Docker configuration for containerizing the Emploi-FSM application.
+## 📦 Prérequis
 
-## Quick Start
+### Installation classique
 
-### Using Docker Compose (Recommended)
+Avant de commencer, assurez-vous d'avoir installé :
 
-From the project root directory:
+- **Java 17** ou supérieur
+- **Node.js 16+** et **npm**
+- **Maven 3.6+**
+- **Angular CLI** (`npm install -g @angular/cli`)
+
+### Installation avec Docker
+
+Alternativement, vous pouvez utiliser Docker pour exécuter l'application :
+
+- **Docker** 20.10 ou supérieur
+- **Docker Compose** 2.0 ou supérieur
+
+## 🔧 Installation
+
+### 1. Cloner le repository
+### Option 1 : Démarrage rapide avec Docker (Recommandé)
+
+La méthode la plus simple pour démarrer l'application :
 
 ```bash
-# Build and start all services
+# Cloner le repository
+git clone https://github.com/mbarekoussama/Emploi-FSM.git
+cd Emploi-FSM
+
+# Construire et démarrer tous les services
 docker compose up -d
 
-# View logs
+# Voir les logs
 docker compose logs -f
+```
 
-# Stop all services
+**Alternative locale** : Si vous rencontrez des problèmes de certificats SSL, utilisez la version locale :
+
+```bash
+# 1. Construire le backend localement
+cd backEnd
+./mvnw clean package -DskipTests
+cd ..
+
+# 2. Utiliser docker-compose local
+docker compose -f docker-compose.local.yml up -d
+```
+
+L'application sera accessible sur :
+- **Frontend** : `http://localhost`
+- **Backend API** : `http://localhost:8082`
+- **H2 Console** : `http://localhost:8082/h2-console`
+- **Swagger UI** : `http://localhost:8082/swagger-ui.html`
+
+Pour arrêter l'application :
+```bash
 docker compose down
 ```
 
-### Individual Container Build
-
-#### Backend
+Pour reconstruire les images après modification du code :
 ```bash
-cd backEnd
-docker build -t emploi-fsm-backend .
-docker run -p 8082:8082 emploi-fsm-backend
+docker compose up -d --build
 ```
 
-#### Frontend
+📚 **Plus d'informations** : Consultez [DOCKER.md](DOCKER.md) pour la documentation complète et le dépannage.
+
+### Option 2 : Installation classique
+
+#### 1. Cloner le repository
+
+```bash
+git clone https://github.com/mbarekoussama/Emploi-FSM.git
+cd Emploi-FSM
+```
+
+### 2. Backend (Spring Boot)
+#### 2. Backend (Spring Boot)
+
+```bash
+cd backEnd
+./mvnw clean install
+./mvnw spring-boot:run
+```
+
+Le serveur backend démarrera sur `http://localhost:8080`
+Le serveur backend démarrera sur `http://localhost:8082`
+
+### 3. Frontend (Angular)
+#### 3. Frontend (Angular)
+
 ```bash
 cd frontEnd
-docker build -t emploi-fsm-frontend .
-docker run -p 80:80 emploi-fsm-frontend
+│   │   │   │   └── settings/   # Configuration
+│   │   │   └── resources/      # Fichiers de configuration
+│   │   └── test/               # Tests unitaires
+│   ├── Dockerfile              # Configuration Docker backend
+│   ├── .dockerignore           # Fichiers à exclure du build Docker
+│   └── pom.xml                 # Dépendances Maven
+│
+├── frontEnd/                   # Application Angular
+│   │   │   └── services/       # Services HTTP
+│   │   ├── assets/             # Ressources statiques
+│   │   └── environments/       # Configuration d'environnement
+│   ├── Dockerfile              # Configuration Docker frontend
+│   ├── .dockerignore           # Fichiers à exclure du build Docker
+│   ├── nginx.conf              # Configuration Nginx pour production
+│   ├── angular.json            # Configuration Angular
+│   └── package.json            # Dépendances npm
+│
+└── test/                       # Données de test
+    └── dataFilieres.xlsx       # Fichier Excel de test
+├── docker-compose.yml          # Orchestration des services Docker
+├── test/                       # Données de test
+│   └── dataFilieres.xlsx       # Fichier Excel de test
+└── README.md                   # Documentation du projet
 ```
 
-## Troubleshooting
+## 📖 Documentation API
 
-### SSL Certificate Issues During Build
+Une fois le backend démarré, accédez à la documentation Swagger :
 
-If you encounter SSL certificate errors during Maven dependency download in Docker, you have two options:
+- **Swagger UI** : `http://localhost:8080/swagger-ui.html`
+- **API Docs** : `http://localhost:8080/v3/api-docs`
+- **Swagger UI** : `http://localhost:8082/swagger-ui.html`
+- **API Docs** : `http://localhost:8082/v3/api-docs`
 
-#### Option 1: Build JAR locally first
+## 🐳 Commandes Docker Utiles
 
+### Gestion des conteneurs
 ```bash
-# Build the JAR locally
-cd backEnd
-./mvnw clean package -DskipTests
+# Démarrer les services
+docker compose up -d
 
-# Then use this alternative Dockerfile
+# Arrêter les services
+docker compose down
+
+# Redémarrer un service spécifique
+docker compose restart backend
+docker compose restart frontend
+
+# Voir les logs
+docker compose logs -f
+docker compose logs -f backend
+docker compose logs -f frontend
+
+# Reconstruire les images
+docker compose build
+docker compose up -d --build
+
+# Supprimer les volumes (réinitialiser la base de données)
+docker compose down -v
 ```
 
-Create `Dockerfile.simple` in the backend directory:
-```dockerfile
-FROM eclipse-temurin:17-jre-alpine
-
-WORKDIR /app
-
-# Copy the pre-built jar
-COPY target/*.jar app.jar
-
-EXPOSE 8082
-
-ENTRYPOINT ["java", "-jar", "app.jar"]
-```
-
-Build with:
+### Commandes de débogage
 ```bash
-docker build -f Dockerfile.simple -t emploi-fsm-backend .
-```
-
-#### Option 2: Update Docker Compose
-
-Update `docker-compose.yml` backend service to use the simple Dockerfile:
-```yaml
-backend:
-  build:
-    context: ./backEnd
-    dockerfile: Dockerfile.simple
-```
-
-### Port Conflicts
-
-If ports 80 or 8082 are already in use:
-
-```yaml
-# In docker-compose.yml, change the port mappings:
-services:
-  backend:
-    ports:
-      - "8083:8082"  # Use port 8083 instead
-  frontend:
-    ports:
-      - "8080:80"    # Use port 8080 instead
-```
-
-### Checking Container Health
-
-```bash
-# Check container status
+# Lister les conteneurs en cours d'exécution
 docker compose ps
 
-# Check container logs
-docker compose logs backend
-docker compose logs frontend
-
-# Execute commands in running container
+# Accéder au shell d'un conteneur
 docker compose exec backend sh
 docker compose exec frontend sh
+
+# Voir l'utilisation des ressources
+docker stats
 ```
 
-## Configuration
-
-### Backend Environment Variables
-
-You can override Spring Boot properties using environment variables in `docker-compose.yml`:
-
-```yaml
-backend:
-  environment:
-    - SPRING_DATASOURCE_URL=jdbc:h2:mem:emplois_temps-db
-    - SERVER_PORT=8082
-```
-
-### Frontend API URL
-
-The frontend is configured to connect to the backend at `http://localhost:8082/api`. If you change the backend port, update `frontEnd/src/environments/environment.prod.ts`.
-
-## Production Deployment
-
-For production deployment:
-
-1. Update environment variables for production
-2. Consider using a persistent database instead of H2 in-memory
-3. Set up proper logging and monitoring
-4. Use Docker secrets for sensitive information
-5. Configure proper resource limits
-
-Example production docker-compose.yml snippet:
-```yaml
-backend:
-  deploy:
-    resources:
-      limits:
-        cpus: '2'
-        memory: 2G
-      reservations:
-        cpus: '1'
-        memory: 1G
-    restart_policy:
-      condition: on-failure
-      delay: 5s
-      max_attempts: 3
-```
+## 🧪 Tests
